@@ -1,72 +1,92 @@
-# SilentAuth - Invisible Authentication System
+# StealthAccess - Invisible Authentication System
 
-SilentAuth is a creative security concept for Windows, designed to authenticate a user without using a traditional password.
+**StealthAccess** is a creative security concept for Windows, designed to authenticate a user **without using a traditional password**.  
 Instead, you prove your identity through secret actions after unlocking the system.
-# 🔥 Features
 
-    Invisible Authentication: No password entry required — just perform your secret actions.
 
-    Three alternative authentication methods:
+![grafik](https://github.com/user-attachments/assets/f8f54fc7-fe0e-47a7-8039-3627f33114d9)
 
-        Hotkey based on the current minute:
-        Press a hotkey (CTRL + WIN + <dynamic letter>) based on the unit place of the current minute.
 
-        Opening specific applications in a sequence:
-        Open the Calculator, then Settings, then Explorer.
+---
 
-        Special Mouse Gesture (currently optional):
-        (Deprecated — was experimental) — Shake the mouse for 5 seconds, stop for 2 seconds, then shake again.
+## 🔥 Features
 
-    Automatic Lock:
-    If no valid authentication is performed within 2 minutes, the computer will automatically lock itself.
+- **Invisible Authentication**:  
+  No password entry — just perform your secret actions.
 
-    Real-time Tray Notifications:
-    Tray tips inform you during the process (for debug and usage clarity).
+- **Three alternative authentication methods**:
+  - **Hotkey based on the current minute**:  
+    Press a hotkey (`CTRL + WIN + <dynamic letter>`) depending on the *unit digit* of the current time.
+  - **Application sequence**:  
+    Open **Calculator** ➔ **Settings** ➔ **Explorer**.
+  - **Mouse gesture (experimental)**:  
+    (deprecated) Shake the mouse for 5 seconds ➔ pause 2 seconds ➔ shake again.
 
-    Fail-Safe Timer:
-    No authentication = no access.
+- **Automatic Lock**:  
+  If no valid authentication is performed within 2 minutes, the computer locks itself.
 
-# 💻 How it works
+- **Real-time Notifications**:  
+  Tray messages keep you informed about your authentication status.
 
-    The script monitors session unlocks (e.g., after waking from sleep or logging back in).
+- **Fail-Safe Timer**:  
+  No authentication → system lock.
 
-    After unlocking:
+---
 
-        A 2-minute timer starts.
+## 💻 How it works
 
-        You must perform one of the secret authentication methods.
+1. The script monitors **session unlock events** (e.g., after waking from sleep or unlocking the computer).
+2. After unlocking:
+   - A **2-minute timer** starts.
+   - You must perform one of the secret methods listed above.
+3. If you succeed → **access granted silently**.
+4. If you fail → **Windows locks again**.
 
-    If you succeed — access is silently granted.
+---
 
-    If you fail — the system will lock again automatically.
+## 📈 Future Ideas
 
-# 🔐 Future Ideas (optional):
+- Randomize required actions based on day/time
+- Smartphone (Bluetooth) verification
+- Adaptive "normal behavior" detection
+- Multi-user version
 
-    Randomized sequences
+---
 
-    Smartphone integration
+## ⚡ Technologies
 
-    Adaptive learning of normal behavior patterns
+- AutoHotkey v1.1 (easy to adapt to v2)
+- Windows API (`LockWorkStation`)
+- Lightweight CPU usage (timers only during checks)
 
-    Multi-user setups
+---
 
-# ⚡ Technologies
+## 📜 License
 
-    AutoHotkey v1.1 (can be ported to v2 easily)
+Released under the [MIT License](LICENSE).  
+Free to use, modify, and share.
 
-    Windows APIs (LockWorkStation)
+---
 
-    Minimal CPU overhead (timers run only during active checks)
+## 🚀 Quick Start
 
-# 📜 License
+1. Install [AutoHotkey](https://www.autohotkey.com/)
+2. Download or clone this repository
+3. Run `StealthAccess.ahk`
+4. Unlock your system with style and stealth! 😎
 
-Feel free to use, modify, and distribute under the MIT License.
-(Or adjust depending on your preference.)
+---
 
-# 🎯 Quick Start
+## 🤝 Acknowledgement
 
-    Install AutoHotkey
+This project was designed with AI assistance (ChatGPT).
 
-    Download the script
+---
 
-    Run SilentAuth.ahk
+# 🖼️ Banner
+![grafik](https://github.com/user-attachments/assets/3fbd9b0a-758e-4062-a231-4c49c26434fa)
+
+
+
+---
+
