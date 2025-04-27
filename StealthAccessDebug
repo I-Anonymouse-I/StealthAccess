@@ -1,0 +1,172 @@
+#Persistent
+#SingleInstance Force
+DetectHiddenWindows, On
+
+OnMessage(0x02B1, "SessionChange")
+
+; Global Variables
+AuthSuccessful := false
+CheckActive := false
+MaxTime := 2 * 60 * 1000 ; 2 minutes
+ErrorCounter := 0
+DebugMode := true ; Initially DebugMode ON
+
+; Window tracking
+StepOneOK := false
+StepTwoOK := false
+StepThreeOK := false
+
+; Time-based hotkey mapping
+LetterMap := ["p", "w", "e", "r", "t", "z", "u", "i", "o", "p"]
+
+return
+
+SessionChange(wParam, lParam)
+{
+    if (lParam = 8) ; 8 = WTS_SESSION_UNLOCK
+    {
+        StartAuthentication()
+    }
+}
+
+; Hotkey: Start manually (Ctrl+Shift+S)
+^+s::
+    StartAuthentication()
+return
+
+; Hotkey: Quit Script (Ctrl+Shift+Q)
+^+q::
+    ExitApp
+return
+
+; Hotkey: Toggle Debug Mode (Ctrl+Shift+D)
+^+d::
+    DebugMode := !DebugMode
+    TrayTip,, % "DEBUG Mode is now " (DebugMode ? "ON" : "OFF"), 2
+return
+
+StartAuthentication()
+{
+    global CheckActive, AuthSuccessful, StartTime, ErrorCounter
+    global StepOneOK, StepTwoOK, StepThreeOK
+
+    AuthSuccessful := false
+    StepOneOK := false
+    StepTwoOK := false
+    StepThreeOK := false
+    ErrorCounter := 0
+    CheckActive := true
+    StartTime := A_TickCount
+
+    SetTimer, MonitorAuthentication, 1000
+    SetTimer, MonitorWindows, 500
+    TrayTip,, DEBUG: Authentication started!, 5
+}
+
+; Hotkeys for Ctrl+Win+[key]
+^#q::CheckHotkey("q")
+^#w::CheckHotkey("w")
+^#e::CheckHotkey("e")
+^#r::CheckHotkey("r")
+^#t::CheckHotkey("t")
+^#z::CheckHotkey("z")
+^#u::CheckHotkey("u")
+^#i::CheckHotkey("i")
+^#o::CheckHotkey("o")
+^#p::CheckHotkey("p")
+
+CheckHotkey(Key)
+{
+    if (!CheckActive)
+        return
+
+    global LetterMap, AuthSuccessful, ErrorCounter
+
+    ; Use the ONE's digit of the minute
+    CurrentMinuteOnes := SubStr(A_Min, 2, 1)
+    ExpectedLetter := LetterMap[CurrentMinuteOnes + 1]
+
+    if (DebugMode)
+        MsgBox, % "Current Minute: " CurrentMinuteOnes "`nExpected Key: " ExpectedLetter "`nPressed: " Key
+
+    if (Key = ExpectedLetter)
+    {
+        AuthSuccessful := true
+        FinishAuthentication("Correct shortcut based on current minute.")
+    }
+    else
+    {
+        ErrorCounter++
+        TrayTip,, DEBUG: Wrong shortcut! Expected %ExpectedLetter%, pressed %Key%, 2
+
+        ; After 3 mistakes → immediate lockout
+        if (ErrorCounter >= 3)
+        {
+            TrayTip,, DEBUG: Too many mistakes! Lockout triggered., 2
+            MsgBox, 16, DEBUG, Too many mistakes! Lockout would happen now.
+            ExitApp
+        }
+    }
+}
+
+MonitorAuthentication:
+{
+    if (!CheckActive)
+        return
+
+    global StartTime, MaxTime, AuthSuccessful
+
+    ElapsedTime := A_TickCount - StartTime
+
+    if (ElapsedTime > MaxTime and !AuthSuccessful)
+    {
+        TrayTip,, DEBUG: Authentication failed., 2
+        Sleep, 500
+        MsgBox, 16, DEBUG, Access denied! Lockout would happen now.
+        ExitApp
+    }
+}
+return
+
+MonitorWindows:
+{
+    if (!CheckActive)
+        return
+
+    global StepOneOK, StepTwoOK, StepThreeOK, AuthSuccessful, DebugMode
+
+    WinGetActiveTitle, ActiveWindow
+    WinGet, ProcessName, ProcessName, A
+
+    if (DebugMode)
+        ToolTip, Window: %ActiveWindow%`nProcess: %ProcessName%
+
+    if (!StepOneOK && (InStr(ActiveWindow, "Rechner") || InStr(ActiveWindow, "Calculator")))
+    {
+        StepOneOK := true
+        TrayTip,, DEBUG: Step 1 OK (Calculator recognized), 2
+    }
+    else if (StepOneOK && !StepTwoOK && (InStr(ActiveWindow, "Einstellungen") || InStr(ActiveWindow, "Settings")))
+    {
+        StepTwoOK := true
+        TrayTip,, DEBUG: Step 2 OK (Settings recognized), 2
+    }
+    else if (StepOneOK && StepTwoOK && !StepThreeOK && (ProcessName = "explorer.exe"))
+    {
+        StepThreeOK := true
+        AuthSuccessful := true
+        FinishAuthentication("Correct window sequence recognized.")
+    }
+}
+return
+
+FinishAuthentication(Message)
+{
+    global CheckActive, DebugMode
+    SetTimer, MonitorAuthentication, Off
+    SetTimer, MonitorWindows, Off
+    CheckActive := false
+    TrayTip,, DEBUG: Access granted: %Message%, 3
+    if (DebugMode)
+        MsgBox, 64, DEBUG, Access granted: %Message%
+}
